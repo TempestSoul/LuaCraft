@@ -28,7 +28,7 @@ end
 
 local function dragon(n)
 	-- returns true if turning left, else turn right
-	local lastBit = bit.band(n, bit.bnot(n))
+	local lastBit = bit.band(n, -n)
 	return bit.band(n, bit.blshift(lastBit, 1)) ~= 0
 end
 
@@ -64,10 +64,11 @@ local function step(blocks)
 			return false
 		end
 	end
+	return true
 end
 
 local nSteps = 1
-while 0 < turtle.getFuelLevel() and step(3) do
+while 0 < turtle.getFuelLevel() and step(2) do
 	if dragon(nSteps) then
 		turnLeft()
 	else
