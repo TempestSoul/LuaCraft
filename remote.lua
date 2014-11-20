@@ -17,18 +17,28 @@ local function findModem()
 	end
 end
 
+local function sendCommand(cmd)
+  local iStart, iEnd, target = string.find(cmd,"(%w+):%s*")
+  if not iStart then
+    rednet.broadcast(cmd, "task")
+  else
+    local id = rednet.lookup("task",target)
+    if not id then
+      print(target.." is not a valid name")
+    else
+      rednet.send(id, string.sub(cmd, iEnd), "task")
+    end
+  end
+end
+
 local function master()
 	print "Enter a command to run on any slaves"
 	local cmd
 	repeat
+		-- for true status updates, need a timer & pullEvent loop
 		cmd = io.read()
-		local iStart, iEnd, target = string.find(cmd,"(%w+):")
-		if not iStart then
-			rednet.broadcast(cmd, "task")
-		else
-			rednet.send(rednet.lookup("task",target), cmd, "task")
-		end
-		local id, ack, num = rednet.receive("ack", 10)
+  		sendCommand(cmd)
+		local id, ack, num = rednet.receive("ack", 5)
 		if id then
 			print("Received by "..id..": "..ack)
 		else
@@ -76,6 +86,7 @@ else
   return
 end
 term.clear()
+term.setCursorPos(1,1)
 if role == "master" then
 	print "Starting as master"
 	master()
